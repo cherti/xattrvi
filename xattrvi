@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+
+import xattr, sys, os, subprocess
+
+# let's get prepared, check if everything is in workingstate
+if len(sys.argv) < 0: sys.exit()
+
+target = sys.argv[1]
+
+if not os.path.exists(target):
+	print("cannot find what you gave me", file=sys.stderr)
+	sys.exit(1)
+
+
+# read out existing xattrs
+xattrs = os.listxattr(target)
+
+userxattrs = [attr.split('.', 1)[1] for attr in xattrs if attr.startswith('user.')]
+otherxattrs = [attr for attr in xattrs if not attr.startswith('user.')]
+
+
+print(userxattrs)
+print(otherxattrs)
