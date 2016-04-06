@@ -73,9 +73,18 @@ with open(tmpfile.name, 'r') as f:
 		sys.exit(2)
 
 	# now update the changed attributes
+	changed = [] #remember changed properties for deletion procedure
 	for key, value in set(newuserxattrs).difference(set(userxattrs)):
 		print(":: updating {0}".format(key))
 		try:
+			changed.append(key)
 			os.setxattr(target, 'user.' + key, value.encode(fsenc))
 		except UnicodeEncodeError:
 			print("!! error encoding {0} : {1}".format(key, value))
+
+	# now delete all properties that are left over
+	for key, _ in set(userxattrs).difference(set(newuserxattrs)): # set of all changed and removed attributes
+		if key not in changed: # then the attribute vanished or key changed
+			print(":: removing {0}".format(key))
+			os.removexattr(target, 'user.' + key)
+
