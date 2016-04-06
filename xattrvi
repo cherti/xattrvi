@@ -19,6 +19,9 @@ if not os.path.exists(target):
 	sys.exit(1)
 
 
+def newline_escape(string):   return string.replace('\n', '\\n')
+def newline_unescape(string): return string.replace('\\n', '\n')
+
 
 # read out existing xattrs
 xattrs = os.listxattr(target)
@@ -42,7 +45,7 @@ tmpfile = tempfile.NamedTemporaryFile()
 with open(tmpfile.name, 'w') as f:
 
 	f.write("# attributes in namespace 'user':\n\n")
-	f.write("\n".join([ "{0:10}   : {1}".format(key, value) for key, value in userxattrs]))
+	f.write("\n".join([ "{0:10}   : {1}".format(key, newline_escape(value)) for key, value in userxattrs]))
 
 	if len(otherxattrs) > 0:
 		f.write("\n"*3)
@@ -71,8 +74,8 @@ with open(tmpfile.name, 'r') as f:
 		f.seek(0)
 
 		# now parse the file
-		newuserxattrlist = [line.strip().split(':') for line in f if line.strip() != "" and not line.startswith('#')]
-		newuserxattrs = [( key.strip(), value.strip() ) for key, value in newuserxattrlist]
+		newuserxattrlist = [line.strip().split(':', 1) for line in f if line.strip() != "" and not line.startswith('#')]
+		newuserxattrs = [( key.strip(), newline_unescape(value.strip()) ) for key, value in newuserxattrlist]
 
 	except UnicodeDecodeError:
 		print("Errors parsing the file, aborting. Did you screw up the syntax?", file=sys.stderr)
@@ -84,7 +87,7 @@ with open(tmpfile.name, 'r') as f:
 		print(":: updating {0}".format(key))
 		try:
 			changed.append(key)
-			os.setxattr(target, 'user.' + key, value.encode(fsenc))
+			os.setxattr(target, 'user.' + key, newline_unescape(value).encode(fsenc))
 		except UnicodeEncodeError:
 			print("!! error encoding {0} : {1}".format(key, value))
 
