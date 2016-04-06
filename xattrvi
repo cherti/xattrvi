@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import xattr, sys, os, subprocess
+import sys, os, subprocess, tempfile
 fsenc = sys.getfilesystemencoding()
 
 # let's get prepared, check if everything is in workingstate
@@ -29,5 +29,24 @@ otherxattrs = [
 		if not attr.startswith('user.')
 		]
 
+tmpfile = tempfile.NamedTemporaryFile()
+
+with open(tmpfile.name, 'w') as f:
+
+	f.write("# namespace 'user'\n\n")
+	f.write("\n".join([ "{0:10}   : {1}".format(key, value) for key, value in userxattrs]))
+	f.write("\n")
 
 
+retval = subprocess.call([os.environ['EDITOR'] or 'nano', tmpfile.name])
+if retval != 0:
+	print("Your editor {0} exited nonzero with {1}, removing stale tmpfile and aborting".format(os.environ['EDITOR'], retval), file=sys.stderr)
+	sys.exit(1)
+
+
+with open(tmpfile.name, 'r') as f:
+	newuserxattrlist = [line.strip().split(':') for line in f if line.strip() != "" and not line.startswith('#')]
+	newuserxattrs = [( key.strip(), value.strip() ) for key, value in newuserxattrlist]
+
+	for key, value in set(newuserxattrs).difference(set(userxattrs)):
+		os.setxattr(target, 'user.' + key, value.encode(fsenc))
