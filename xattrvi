@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
 
-"""
-TODO:
-* implement command-line-option to set "follow_symlinks" to False
-  to be able to edit properties of symlinks
-"""
-
 import sys, os, subprocess, tempfile
 fsenc = sys.getfilesystemencoding()
 
