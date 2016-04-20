@@ -1,41 +1,86 @@
 #!/usr/bin/env python3
 
-import sys, os, subprocess, tempfile, argparse
+import sys, os, subprocess, tempfile, argparse, codecs
 
 parser = argparse.ArgumentParser(description='xattrvi - modify xattributes of files the simple way')
 
 parser.add_argument('-v', action='count', default=0, dest='verbosity')
-parser.add_argument('-e', '--encoding', action='store', dest='valenc', type=str, default='utf-8', help='encoding to be used for value-decoding')
+parser.add_argument('-e', '--encoding', action='store', dest='stdenc', type=str, default='utf-8', help='encoding to be used for value-decoding')
 parser.add_argument('filename', action='store', type=str, default=None, help='file that needs to get modified')
 
 args = parser.parse_args(sys.argv[1:])
 
-# let's get prepared, check if everything is in workingstate
+###
+## let's get prepared, check if everything is in workingstate
+###
+
+# test if there is a file supplied at all
 if not args.filename: sys.exit()
 
+# test if that file actually exists
 if not os.path.exists(args.filename):
 	print("cannot find what you gave me", file=sys.stderr)
 	sys.exit(1)
 
-valenc = args.valenc
+# test if a shitty encoding was supplied
+
+try: codecs.lookup(args.stdenc)
+except LookupError:
+	print("I don't know that encoding", file=sys.stderr)
+	sys.exit(2)
+else:
+	stdenc = args.stdenc
 
 def newline_escape(string):   return string.replace('\n', '\\n')
 def newline_unescape(string): return string.replace('\\n', '\n')
 
 
+###
+## now parse xattrvi-config, if there is one
+###
+
+ignored_keys = []
+key_encodings = dict()
+
+if os.path.isfile(os.path.expanduser('~/.config/xattrvirc')):
+	with open(os.path.expanduser('~/.config/xattrvirc')) as f:
+		for line in f:
+			# omit comments and empty lines
+			if line.startswith('#') or line.strip() == "": continue
+
+			if line.startswith('ignore:'):
+				ignored_keys.append(line.split(':', 1).strip())
+
+			if line.startwith('key_encoding:'):
+				_, key, enc = key_encodings.split(':', 2)
+				try: codecs.lookup(enc)
+				except LookupError:
+					print("I don't know the encoding {0} in your xattrvirc, adding that key to the ignored ones".format(enc), file=sys.stderr)
+					ignored_keys.append(key)
+				else:
+					key_encodings[key] = enc
+
+
 # read out existing xattrs
 xattrs = os.listxattr(args.filename)
 
+def get_decoded_attr(filename, attr):
+	if attr in key_encodings:
+		return os.getxattr(filename, attr).decode(key_encoding[attr])
+	else:
+		return os.getxattr(filename, attr).decode(stdenc)
+
+
 userxattrs = [
-		( attr.split('.', 1)[1], os.getxattr(args.filename, attr).decode(valenc) )
+		( attr.split('.', 1)[1], get_decoded_attr(args.filename, attr) )
 		for attr in xattrs
-		if attr.startswith('user.')
+		if attr.startswith('user.') and not attr in ignored_keys
 		]
 
 otherxattrs = [
-		( attr, os.getxattr(args.filename, xattr).decode(valenc) )
+		( attr, get_decoded_attr(args.filename, attr) )
 		for attr in xattrs
-		if not attr.startswith('user.')
+		if not attr.startswith('user.') and not attr in ignored_keys
 		]
 
 tmpfile = tempfile.NamedTemporaryFile()
@@ -87,7 +132,7 @@ with open(tmpfile.name, 'r') as f:
 		print(":: updating {0}".format(key))
 		try:
 			changed.append(key)
-			os.setxattr(args.filename, 'user.' + key, newline_unescape(value).encode(valenc))
+			os.setxattr(args.filename, 'user.' + key, newline_unescape(value).encode(stdenc))
 		except UnicodeEncodeError:
 			print("!! error encoding {0} : {1}".format(key, value))
 
