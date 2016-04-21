@@ -22,6 +22,12 @@ The `user.` is ommitted in the file for ease of use, but is assumed implicitly f
 
 New attributes will be set, changed attributes will be updated, vanished attributes will be deleted from the file, so be careful when editing the file.
 
+### Limitations
+
+Keys may not contain the character `:`.
+Although supported by filesystems, xattrvi does not support this character for keys, but reservates it for key-value-separation in the display-file.
+Values, though, may include this character.
+
 ## Configuration
 
 ### directly on commandline
