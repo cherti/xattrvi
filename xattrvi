@@ -76,6 +76,14 @@ def get_decoded_attr(filename, attr):
 	else:
 		return os.getxattr(filename, attr, follow_symlinks=args.follow_symlink).decode(stdenc)
 
+def set_encoded_attr(filename, attr, value):
+	candidate = newline_unescape(value)
+	if attr in key_encodings:
+		encoded_value = candidate.decode(key_encoding[attr])
+	else:
+		encoded_value = candidate.decode(key_encoding[stdenc])
+
+	os.setxattr(args.filename, 'user.' + key, encoded_value)
 
 userxattrs = []
 for attr in xattrs:
