@@ -6,6 +6,7 @@ parser = argparse.ArgumentParser(description='xattrvi - modify xattributes of fi
 
 parser.add_argument('-v', action='count', default=0, dest='verbosity')
 parser.add_argument('-e', '--encoding', action='store', dest='stdenc', type=str, default='utf-8', help='encoding to be used for value-decoding')
+parser.add_argument('-s', '--edit-symlinks', action='store_false', dest='follow_symlink', default=True, help='edit xattributes of symlink itself instead of the targetfile')
 parser.add_argument('filename', action='store', type=str, default=None, help='file that needs to get modified')
 
 args = parser.parse_args(sys.argv[1:])
@@ -66,9 +67,9 @@ xattrs = os.listxattr(args.filename)
 
 def get_decoded_attr(filename, attr):
 	if attr in key_encodings:
-		return os.getxattr(filename, attr).decode(key_encoding[attr])
+		return os.getxattr(filename, attr, follow_symlinks=args.follow_symlink).decode(key_encoding[attr])
 	else:
-		return os.getxattr(filename, attr).decode(stdenc)
+		return os.getxattr(filename, attr, follow_symlinks=args.follow_symlink).decode(stdenc)
 
 
 userxattrs = [
