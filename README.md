@@ -42,9 +42,8 @@ Configuration is done via commandline options:
     
     optional arguments:
       -h, --help            show this help message and exit
-      -v
       -e STDENC, --encoding STDENC
-                            encoding to be used for value-decoding
+                            encoding to be used for value-decoding, defaults to utf-8
       -s, --edit-symlinks   edit xattributes of symlink itself instead of the
                             targetfile
       --hide-undecodable    hide entries whose value could not be decoded properly
