@@ -7,6 +7,7 @@ parser = argparse.ArgumentParser(description='xattrvi - modify xattributes of fi
 parser.add_argument('-v', action='count', default=0, dest='verbosity')
 parser.add_argument('-e', '--encoding', action='store', dest='stdenc', type=str, default='utf-8', help='encoding to be used for value-decoding')
 parser.add_argument('-s', '--edit-symlinks', action='store_false', dest='follow_symlink', default=True, help='edit xattributes of symlink itself instead of the targetfile')
+parser.add_argument('--hide-undecodable', action='store_true', default=False, dest='show_undecodable', help='hide entries whose value could not be decoded properly')
 parser.add_argument('filename', action='store', type=str, default=None, help='file that needs to get modified')
 
 args = parser.parse_args(sys.argv[1:])
@@ -76,17 +77,25 @@ def get_decoded_attr(filename, attr):
 		return os.getxattr(filename, attr, follow_symlinks=args.follow_symlink).decode(stdenc)
 
 
-userxattrs = [
-		( attr.split('.', 1)[1], get_decoded_attr(args.filename, attr) )
-		for attr in xattrs
-		if attr.startswith('user.') and not attr in ignored_keys
-		]
+userxattrs = []
+for attr in xattrs:
+	if attr.startswith('user.') and not attr in ignored_keys:
+		try:
+			userxattrs.append(( attr.split('.', 1)[1], get_decoded_attr(args.filename, attr) ))
+		except UnicodeDecodeError:
+			if args.show_undecodable:
+				userxattrs.append(( "# {0}".format(attr.split('.', 1)[1]), "undecodable" ))
 
-otherxattrs = [
-		( attr, get_decoded_attr(args.filename, attr) )
-		for attr in xattrs
-		if not attr.startswith('user.') and not attr in ignored_keys
-		]
+
+otherxattrs = []
+for attr in xattrs:
+	if not attr.startswith('user.') and not attr in ignored_keys:
+		try:
+			otherxattrs.append(( attr, get_decoded_attr(args.filename, attr) ))
+		except UnicodeDecodeError:
+			if args.show_undecodable:
+				userxattrs.append(( "# {0}".format(attr.split('.', 1)[1]), "undecodable" ))
+
 
 tmpfile = tempfile.NamedTemporaryFile()
 
