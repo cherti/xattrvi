@@ -6,7 +6,6 @@ parser = argparse.ArgumentParser(description='xattrvi - modify xattributes of fi
 
 #parser.add_argument('-v', action='count', default=0, dest='verbosity', help='give more output')
 parser.add_argument('-e', '--encoding', action='store', dest='stdenc', type=str, default='utf-8', help='encoding to be used for value-decoding, defaults to utf-8')
-parser.add_argument('-s', '--edit-symlinks', action='store_false', dest='follow_symlink', default=True, help='edit xattributes of symlink itself instead of the targetfile')
 parser.add_argument('--hide-undecodable', action='store_true', default=False, dest='show_undecodable', help='hide entries whose value could not be decoded properly')
 parser.add_argument('filename', action='store', type=str, default=None, help='file that needs to get modified')
 
@@ -72,9 +71,9 @@ xattrs = os.listxattr(args.filename)
 
 def get_decoded_attr(filename, attr):
 	if attr in value_encodings:
-		return os.getxattr(filename, attr, follow_symlinks=args.follow_symlink).decode(value_encoding[attr])
+		return os.getxattr(filename, attr, follow_symlinks=True).decode(value_encoding[attr])
 	else:
-		return os.getxattr(filename, attr, follow_symlinks=args.follow_symlink).decode(stdenc)
+		return os.getxattr(filename, attr, follow_symlinks=True).decode(stdenc)
 
 def set_encoded_attr(filename, attr, value):
 	candidate = newline_unescape(value)
