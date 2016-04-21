@@ -44,17 +44,17 @@ def newline_unescape(string): return string.replace('\\n', '\n')
 ignored_keys = []
 key_encodings = dict()
 
-if os.path.isfile(os.path.expanduser('~/.config/xattrvirc')):
-	with open(os.path.expanduser('~/.config/xattrvirc')) as f:
+if os.path.isfile(os.path.expanduser('~/.config/xattrvi/xattrvirc')):
+	with open(os.path.expanduser('~/.config/xattrvi/xattrvirc')) as f:
 		for line in f:
 			# omit comments and empty lines
 			if line.startswith('#') or line.strip() == "": continue
 
 			if line.startswith('ignore:'):
-				ignored_keys.append(line.split(':', 1).strip())
+				ignored_keys.append(line.split(':', 1)[1].strip())
 
-			if line.startwith('key_encoding:'):
-				_, key, enc = key_encodings.split(':', 2)
+			if line.startswith('key_encoding:'):
+				_, key, enc = line.strip().split(':', 2)
 				try: codecs.lookup(enc)
 				except LookupError:
 					print("I don't know the encoding {0} in your xattrvirc, adding that key to the ignored ones".format(enc), file=sys.stderr)
