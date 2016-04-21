@@ -42,7 +42,7 @@ def newline_unescape(string): return string.replace('\\n', '\n')
 ###
 
 ignored_keys = []
-key_encodings = dict()
+value_encodings = dict()
 
 if os.path.isfile(os.path.expanduser('~/.config/xattrvi/xattrvirc')):
 	with open(os.path.expanduser('~/.config/xattrvi/xattrvirc')) as f:
@@ -53,14 +53,14 @@ if os.path.isfile(os.path.expanduser('~/.config/xattrvi/xattrvirc')):
 			if line.startswith('ignore:'):
 				ignored_keys.append(line.split(':', 1)[1].strip())
 
-			if line.startswith('key_encoding:'):
+			if line.startswith('value_encoding:'):
 				_, key, enc = line.strip().split(':', 2)
 				try: codecs.lookup(enc)
 				except LookupError:
 					print("I don't know the encoding {0} in your xattrvirc, adding that key to the ignored ones".format(enc), file=sys.stderr)
 					ignored_keys.append(key)
 				else:
-					key_encodings[key] = enc
+					value_encodings[key] = enc
 
 
 ###
@@ -71,17 +71,17 @@ if os.path.isfile(os.path.expanduser('~/.config/xattrvi/xattrvirc')):
 xattrs = os.listxattr(args.filename)
 
 def get_decoded_attr(filename, attr):
-	if attr in key_encodings:
-		return os.getxattr(filename, attr, follow_symlinks=args.follow_symlink).decode(key_encoding[attr])
+	if attr in value_encodings:
+		return os.getxattr(filename, attr, follow_symlinks=args.follow_symlink).decode(value_encoding[attr])
 	else:
 		return os.getxattr(filename, attr, follow_symlinks=args.follow_symlink).decode(stdenc)
 
 def set_encoded_attr(filename, attr, value):
 	candidate = newline_unescape(value)
-	if attr in key_encodings:
-		encoded_value = candidate.decode(key_encoding[attr])
+	if attr in value_encodings:
+		encoded_value = candidate.decode(value_encoding[attr])
 	else:
-		encoded_value = candidate.decode(key_encoding[stdenc])
+		encoded_value = candidate.decode(value_encoding[stdenc])
 
 	os.setxattr(args.filename, 'user.' + key, encoded_value)
 
