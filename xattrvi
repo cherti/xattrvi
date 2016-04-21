@@ -62,6 +62,10 @@ if os.path.isfile(os.path.expanduser('~/.config/xattrvirc')):
 					key_encodings[key] = enc
 
 
+###
+## now let's get to the actual action! Let's deal with xattributes
+###
+
 # read out existing xattrs
 xattrs = os.listxattr(args.filename)
 
