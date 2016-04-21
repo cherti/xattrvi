@@ -121,7 +121,7 @@ with open(tmpfile.name, 'w') as f:
 
 
 # let the user change those attributes
-retval = subprocess.call([os.environ['EDITOR'] or 'nano', tmpfile.name])
+retval = subprocess.call([os.environ.get('EDITOR') or 'nano', tmpfile.name])
 if retval != 0:
 	print("!! Your editor {0} exited nonzero with {1}, removing stale tmpfile and aborting".format(os.environ['EDITOR'], retval), file=sys.stderr)
 	sys.exit(1)
