@@ -25,7 +25,7 @@ New attributes will be set, changed attributes will be updated, vanished attribu
 ### Limitations
 
 Keys may not contain the character `:`.
-Although supported by filesystems, xattrvi does not support this character for keys, but reservates it for key-value-separation in the display-file.
+Although supported by filesystems, xattrvi does not support this character for keys, but reserves it for key-value-separation in the display-file.
 Values, though, may include this character.
 
 ## Configuration
