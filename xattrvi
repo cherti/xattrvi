@@ -4,7 +4,6 @@ import sys, os, subprocess, tempfile, argparse, codecs
 
 parser = argparse.ArgumentParser(description='xattrvi - modify xattributes of files the simple way')
 
-#parser.add_argument('-v', action='count', default=0, dest='verbosity', help='give more output')
 parser.add_argument('-e', '--encoding', action='store', dest='stdenc', type=str, default='utf-8', help='encoding to be used for value-decoding, defaults to utf-8')
 parser.add_argument('--hide-undecodable', action='store_true', default=False, dest='show_undecodable', help='hide entries whose value could not be decoded properly')
 parser.add_argument('filename', action='store', type=str, default=None, help='file that needs to get modified')
