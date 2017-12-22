@@ -33,7 +33,7 @@ Values, though, may include this character.
 ### directly on commandline
 Configuration is done via commandline options:
 
-    usage: xattrvi [-h] [-v] [-e STDENC] [-s] [--hide-undecodable] filename
+    usage: xattrvi [-h] [-v] [-e STDENC] [-s] [--editor EDITOR] [--hide-undecodable] filename
     
     xattrvi - modify xattributes of files the simple way
     
@@ -45,6 +45,8 @@ Configuration is done via commandline options:
       -e STDENC, --encoding STDENC
                             encoding to be used for value-decoding, defaults to utf-8
       --hide-undecodable    hide entries whose value could not be decoded properly
+      --editor              specify custom editor on the command line.
+                            Example: --editor 'gvim --nofork'.
 
 ### xattrvirc
 

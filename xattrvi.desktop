@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=xattrvi
+Exec=xattrvi --hide-undecodable --editor 'vim -c "set shell=/bin/bash"' %u
+# the desktop file needs Terminal=true for an editor that works in a shell
+Terminal=true
+Type=Application
+StartupNotify=true
+MimeType=inode/directory;application/octet-stream;text/plain;application/pdf;
+

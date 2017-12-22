@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
-import sys, os, subprocess, tempfile, argparse, codecs
+import sys, os, subprocess, tempfile, argparse, codecs, shlex
 
 parser = argparse.ArgumentParser(description='xattrvi - modify xattributes of files the simple way')
 
 parser.add_argument('-e', '--encoding', action='store', dest='stdenc', type=str, default='utf-8', help='encoding to be used for value-decoding, defaults to utf-8')
 parser.add_argument('--hide-undecodable', action='store_true', default=False, dest='show_undecodable', help='hide entries whose value could not be decoded properly')
 parser.add_argument('filename', action='store', type=str, default=None, help='file that needs to get modified')
+parser.add_argument('--editor', action='store', type=str, dest='editor', default=os.environ.get('EDITOR') or 'nano', help='use this particular editor')
 
 args = parser.parse_args(sys.argv[1:])
 
@@ -117,11 +118,11 @@ with open(tmpfile.name, 'w') as f:
 		f.write("# attributes in other namespaces:\n\n")
 		f.write("\n#".join([ "{0:10}   : {1}".format(key, value) for key, value in otherxattrs]))
 
+args.editor = shlex.split(args.editor)
+retval = subprocess.call(args.editor + [tmpfile.name])
 
-# let the user change those attributes
-retval = subprocess.call([os.environ.get('EDITOR') or 'nano', tmpfile.name])
 if retval != 0:
-	print("!! Your editor {0} exited nonzero with {1}, removing stale tmpfile and aborting".format(os.environ['EDITOR'], retval), file=sys.stderr)
+	print("!! Your editor {0} exited nonzero with {1}, removing stale tmpfile and aborting".format(args.editor, retval), file=sys.stderr)
 	sys.exit(1)
 
 

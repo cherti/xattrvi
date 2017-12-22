@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=xattrvi-gvim
+Exec=xattrvi --editor 'gvim --nofork' %u
+Terminal=false
+Type=Application
+StartupNotify=true
+MimeType=inode/directory;application/octet-stream;text/plain;application/pdf;
